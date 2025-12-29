@@ -14,7 +14,7 @@ int ifevent(int fd, int keynum, char evval, int time);
 
 int* ifevents(int fd, listelement *events, char type, int time);
 //returns event([number, type])if event from events hapend, else NULL;
-//type - type of shering, 0 for first event, 1 for last, 2 for that with hepend most time;
+//type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
 //if events == NULL reacts to all of events;
 

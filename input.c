@@ -19,7 +19,7 @@ int ifevent(int fd, int keynum, char evvel, int time);
 
 int* ifevents(int fd, listelement* events, char type, int time);
 //returns event([number, type])if event from events hapend, else NULL;
-//type - type of shering, 0 for first event, 1 for last, 2 for that with hepend most time;
+//type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
 //if events == NULL reacts to all of events;
 
@@ -47,7 +47,7 @@ int ifevent(int fd, int keynum, char evval, int time)
 	while (timediff(bt, rettime()) < time || time == -1)
 	{
 		read(fd, &ev, sizeof(ev));
-		printf("Type: %d Code: %d Value: %d\n", ev.type == EV_KEY, (int) ev.code, (int) ev.value);
+		//printf("Type: %d Code: %d Value: %d\n", ev.type == EV_KEY, (int) ev.code, (int) ev.value);
 		if (ev.type == EV_KEY && ev.code == keynum && (ev.value == evval || evval == 2))
 		{
 			return 1;
@@ -58,7 +58,40 @@ int ifevent(int fd, int keynum, char evval, int time)
 
 }
 
+int* ifevents(int fd, listelement* events, char type, int time)
+{
+	struct input_event ev;
+	
+	if (time == -1 && type != 0)
+	{
+		return NULL;//check
+	}
 
+	int last_event[2] = {-1, -1};//list with events that alredy hapend;
+
+	int *nev = calloc(2, sizeof(int));
+	
+	long double bt = rettime();//begining time;
+	while (timediff(bt, rettime()) < time || time == -1)
+	{
+		read(fd, &ev, sizeof(ev));
+		nev[0] = ev.code;
+		nev[1] = ev.value;
+		if (ifinlist(events, nev, 'i', 2))
+		{
+			if (type == 1)
+			{
+				last_event[0] = nev[0];
+				last_event[1] = nev[1];
+			}
+			else if (type == 0)
+			{
+				return nev;
+			}
+		}
+	}
+
+}
 
 /*
 static int fd = -1;//file deckriptor

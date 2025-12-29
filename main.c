@@ -8,6 +8,12 @@ int main()
 {
 	int fd = retfd(0, 2);
 	printf("FD: %d\n", fd);
+	/*
 	printf("ifev: %d\n", ifevent(fd, KEY_W, 2, -1));
+	*/
+
+	listelement *events = append
+	int* ifevents(int fd, listelement* events, char type, int time)
+	
 	close(fd);
 }
