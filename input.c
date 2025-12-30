@@ -17,11 +17,15 @@ int ifevent(int fd, int keynum, char evvel, int time);
 //returns 1 if event with number keynum and type evtype hapend, else 0;
 //waits time second if nonblocking;
 
-int* ifevents(int fd, listelement* events, char type, int time);
+int* ifevents(int fd, void* events, long arrlen, char type, int time);
+//events - array of intger arrays, 2 element ech, code of key and value of the event;
 //returns event([number, type])if event from events hapend, else NULL;
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
 //if events == NULL reacts to all of events;
+
+static int ifinarr(int **arr, long arrlen, int *vel);
+
 
 int retfd(char type, char num)
 {
@@ -58,7 +62,7 @@ int ifevent(int fd, int keynum, char evval, int time)
 
 }
 
-int* ifevents(int fd, listelement* events, char type, int time)
+int* ifevents(int fd, void* events, long arrlen, char type, int time)
 {
 	struct input_event ev;
 	
@@ -77,7 +81,7 @@ int* ifevents(int fd, listelement* events, char type, int time)
 		read(fd, &ev, sizeof(ev));
 		nev[0] = ev.code;
 		nev[1] = ev.value;
-		if (ifinlist(events, nev, 'i', 2))
+		if (ifinarr(events, arrlen, nev))
 		{
 			if (type == 1)
 			{
@@ -89,8 +93,25 @@ int* ifevents(int fd, listelement* events, char type, int time)
 				return nev;
 			}
 		}
+		sleepsec(time*0.001);
 	}
+	nev[0] = last_event[0];
+	nev[1] = last_event[1];
+	return nev;
 
+}
+
+static int ifinarr(int **arr, long arrlen, int *vel)
+{
+	for(int i = 0; i < arrlen; i++)
+	{
+		//if ((((int*)arr)[i])[0] == vel[0] && (((int*)arr)[i])[1] == vel[1])
+		if (*(arr[i]) == vel[0] && *(arr[i]+1) == vel[1])
+		{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 /*

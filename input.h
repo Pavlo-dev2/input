@@ -12,7 +12,8 @@ int ifevent(int fd, int keynum, char evval, int time);
 //waits time second if nonblocking;
 //if time == -1 wait until event hapend
 
-int* ifevents(int fd, listelement *events, char type, int time);
+int* ifevents(int fd, void *events, long arrlen, char type, int time);
+//events - array of intger arrays, 2 element ech, code of key and value of the event;
 //returns event([number, type])if event from events hapend, else NULL;
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
