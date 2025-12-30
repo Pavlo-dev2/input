@@ -17,6 +17,22 @@ int* ifevents(int fd, void *events, long arrlen, char type, int time);
 //returns event([number, type])if event from events hapend, else NULL;
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
+
+int* ifeventscode(int fd, int *events, long arrlen, char type, int time);
+//events - array of intgers, codes of keys;
+//returns event number if event from events hapend(key pressed or let), else NULL;
+//type - type of shering, 0 for first event, 1 for last;
+//waits time seconds if nonblocking;
 //if events == NULL reacts to all of events;
+
+int ifpressed(int fd, char type, int time);
+//returns event code if any event hapend(any kay pressed) else NULL;
+//type - type of shering, 0 for first event, 1 for last;
+//waits time seconds if nonblocking;
+
+int iflet(int fd, char type, int time);
+//returns event code if any event hapend(any key let go after it was pressed) else NULL;
+//type - type of shering, 0 for first event, 1 for last;
+//waits time seconds if nonblocking;
 
 #endif 
