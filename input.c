@@ -172,10 +172,7 @@ int ifeventsvalue(int fd, int eventsvalue, char type, int time)
 	{
 		read(fd, &ev, sizeof(ev));
 		nec = ev.code;
-		printf("Code: %d\n", nec);
-		printf("LC: %d\n", last_code);
-		printf("Value: %d\n", ev.value);
-		if (ev.value == eventsvalue)
+		if (ev.type == EV_KEY && ev.value == eventsvalue)
 		{
 			if (type == 1)
 			{

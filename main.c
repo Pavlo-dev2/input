@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <linux/input.h>
+#include "timing.h"
 
 int main()
 {
@@ -35,7 +36,11 @@ int main()
 	*/
 	
 	//ifeventsvalue test
-	printf("Ifeventscode: %d\n", ifeventsvalue(fd, 0, 0, 2));
-	
+	/*
+	sleepsec(1);
+	printf("Go\n");
+	printf("Ifeventscode: %d\n", ifeventsvalue(fd, 0, 1, 4));
+	*/
+
 	close(fd);
 }
