@@ -6,26 +6,43 @@
 #include <errno.h>
 #include <sys/select.h>
 #include "timing.h"
-#include "linkedlistlib.h"
 
 int retfd(char type, char num);
 //returns file deckriptor;
 //type - type of the deckriptor, 0: Blocking, 1: Nonblocking;
 //num - number of the /dev/input/event* file;
 
-int ifevent(int fd, int keynum, char evvel, int time);
-//returns 1 if event with number keynum and type evtype hapend, else 0;
+int ifevent(int fd, int keynum, char evval, int time);
+//returns 1 if event with code keynum and value evtype hapend, else 0;
 //waits time second if nonblocking;
+//if time == -1 wait until event hapend
 
-int* ifevents(int fd, void* events, long arrlen, char type, int time);
+int* ifevents(int fd, void *events, long arrlen, char type, int time);
 //events - array of intger arrays, 2 element ech, code of key and value of the event;
-//returns event([number, type])if event from events hapend, else NULL;
+//returns event([code, value])if event from events hapend, else NULL;
+//type - type of shering, 0 for first event, 1 for last;
+//waits time seconds if nonblocking;
+
+int ifeventscode(int fd, int *events, long arrlen, char type, int time);
+//events - array of intgers, codes of keys;
+//returns event code if event from events hapend(key pressed or let), else -1;
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
 //if events == NULL reacts to all of events;
 
-static int ifinarr(int **arr, long arrlen, int *vel);
+int ifeventsvalue(int fd, int eventsvalue, char type, int time);
+//eventsvalue - value of event(0 or 1);
+//returns event code if event with this value hapend(key pressed or let), else -1;
+//type - type of shering, 0 for first event, 1 for last;
+//waits time seconds if nonblocking;
+//if events == NULL reacts to all of events;
 
+int* ifanyevent(int fd, char type, int time);
+//returns event([code, value]) if any event hapend else NULL;
+//type - type of shering, 0 for first event, 1 for last;
+//waits time seconds if nonblocking;
+
+static int ifinarr(int **arr, long arrlen, int *vel);
 
 int retfd(char type, char num)
 {
@@ -73,7 +90,7 @@ int* ifevents(int fd, void* events, long arrlen, char type, int time)
 
 	int last_event[2] = {-1, -1};//list with events that alredy hapend;
 
-	int *nev = calloc(2, sizeof(int));
+	int *nev = calloc(2, sizeof(int));//new event
 	
 	long double bt = rettime();//begining time;
 	while (timediff(bt, rettime()) < time || time == -1)
@@ -98,7 +115,80 @@ int* ifevents(int fd, void* events, long arrlen, char type, int time)
 	nev[0] = last_event[0];
 	nev[1] = last_event[1];
 	return nev;
+}
 
+int ifeventscode(int fd, int *events, long arrlen, char type, int time)
+{
+	struct input_event ev;
+	
+	if (time == -1 && type != 0)
+	{
+		return -1;//check
+	}
+
+	int last_code = -1;//code of events that alredy hapend;
+
+	int nec = -1;//new code;
+	
+	long double bt = rettime();//begining time;
+	while (timediff(bt, rettime()) < time || time == -1)
+	{
+		read(fd, &ev, sizeof(ev));
+		nec = ev.code;
+		for(int i = 0; i < arrlen; i++)
+		{
+			if (nec == events[i])
+			{
+				if (type == 1)
+				{
+					last_code = nec;
+				}
+				else if (type == 0)
+				{
+					return nec;
+				}
+			}
+		}
+		sleepsec(time*0.001);
+	}
+	return last_code;
+}
+
+int ifeventsvalue(int fd, int eventsvalue, char type, int time)
+{
+	struct input_event ev;
+	
+	if (time == -1 && type != 0)
+	{
+		return -1;//check
+	}
+
+	int last_code = -1;//code of events that alredy hapend;
+
+	int nec = -1;//new code;
+	
+	long double bt = rettime();//begining time;
+	while (timediff(bt, rettime()) < time || time == -1)
+	{
+		read(fd, &ev, sizeof(ev));
+		nec = ev.code;
+		printf("Code: %d\n", nec);
+		printf("LC: %d\n", last_code);
+		printf("Value: %d\n", ev.value);
+		if (ev.value == eventsvalue)
+		{
+			if (type == 1)
+			{
+				last_code = nec;
+			}
+			else if (type == 0)
+			{
+				return nec;
+			}
+		}
+		sleepsec(time*0.001);
+	}
+	return last_code;
 }
 
 static int ifinarr(int **arr, long arrlen, int *vel)
@@ -114,59 +204,4 @@ static int ifinarr(int **arr, long arrlen, int *vel)
 	return 0;
 }
 
-/*
-static int fd = -1;//file deckriptor
-static char lastdr = 'u';//last direction
 
-char input(float st)
-{
-	struct input_event ev;//event
-	char dr = 0;//new ditection
-	
-	//open file deckriptor
-	if (fd == -1)
-	{
-		fd = open(ADDRES, O_RDONLY | O_NONBLOCK);
-	}
-
-	long double bt = rettime();//begining time
-
-	//wait on input as long as you have time
-	//while ((st - (td = (clock()/CLOCKS_PER_SEC) - at)* 1000000) > 0)//TODO
-	while (timediff(bt, rettime()) < st)
-	{
-		//printf("Actual time: %ld\nBegining time: %f\nTime: %f\n", clock()/CLOCKS_PER_SEC, bt, st);
-		read(fd, &ev, sizeof(ev));
-		if (ev.type == EV_KEY)
-		{
-			switch (ev.code)
-			{
-				case KEY_W:
-					if (lastdr != 'd')
-						dr = 'u'; break;
-				case KEY_D:
-					if (lastdr != 'l')
-						dr = 'r'; break;
-				case KEY_S:
-					if (lastdr != 'u')
-						dr = 'd'; break;
-				case KEY_A:
-					if (lastdr != 'r')
-						dr = 'l'; break;
-				case KEY_E:
-					dr = 'E'; break;
-			}
-			//break;
-		}
-		//printf("ST: %.0f\n", st);
-		sleepsec(st*0.001);
-	}
-
-	if (dr != 0)
-	{
-		lastdr = dr;
-	}
-
-	return lastdr;
-}
-*/
