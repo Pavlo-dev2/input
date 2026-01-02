@@ -39,8 +39,13 @@ int main()
 	/*
 	sleepsec(1);
 	printf("Go\n");
-	printf("Ifeventscode: %d\n", ifeventsvalue(fd, 0, 1, 4));
+	printf("Ifeventscode: %d\n", ifeventsvalue(fd, 1, 0, 4));
 	*/
+	
+	//ifanyevent test
+	int *retvel = ifanyevent(fd, 1, 3);
+	printf("RETVEL: %p\n{%d, %d}\n", retvel, retvel[0], retvel[1]);
+	free(retvel);
 
 	close(fd);
 }

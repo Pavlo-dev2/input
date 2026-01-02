@@ -44,6 +44,8 @@ int* ifanyevent(int fd, char type, int time);
 
 static int ifinarr(int **arr, long arrlen, int *vel);
 
+static long double sleeptime = 0.001;//time * sleeptime = waiting time;
+
 int retfd(char type, char num)
 {
 	char addres[] = "/dev/input/event ";//16 - possion of the file number;
@@ -110,7 +112,7 @@ int* ifevents(int fd, void* events, long arrlen, char type, int time)
 				return nev;
 			}
 		}
-		sleepsec(time*0.001);
+		sleepsec(sleeptime);
 	}
 	nev[0] = last_event[0];
 	nev[1] = last_event[1];
@@ -149,7 +151,7 @@ int ifeventscode(int fd, int *events, long arrlen, char type, int time)
 				}
 			}
 		}
-		sleepsec(time*0.001);
+		sleepsec(sleeptime);
 	}
 	return last_code;
 }
@@ -183,9 +185,47 @@ int ifeventsvalue(int fd, int eventsvalue, char type, int time)
 				return nec;
 			}
 		}
-		sleepsec(time*0.001);
+		sleepsec(sleeptime);
 	}
 	return last_code;
+}
+
+int* ifanyevent(int fd, char type, int time)
+{
+	struct input_event ev;
+	
+	if (time == -1 && type != 0)
+	{
+		return NULL;//check
+	}
+
+	int last_event[2] = {-1, -1};//list with events that alredy hapend;
+
+	int *nev = calloc(2, sizeof(int));//new event
+	
+	long double bt = rettime();//begining time;
+	while (timediff(bt, rettime()) < time || time == -1)
+	{
+		read(fd, &ev, sizeof(ev));
+		nev[0] = ev.code;
+		nev[1] = ev.value;
+		if (ev.type == EV_KEY)
+		{
+			if (type == 1)
+			{
+				last_event[0] = nev[0];
+				last_event[1] = nev[1];
+			}
+			else if (type == 0)
+			{
+				return nev;
+			}
+		}
+		sleepsec(sleeptime);
+	}
+	nev[0] = last_event[0];
+	nev[1] = last_event[1];
+	return nev;
 }
 
 static int ifinarr(int **arr, long arrlen, int *vel)

@@ -1,6 +1,5 @@
 #ifndef INPUT_H
 #define INPUT_H
-#include "linkedlistlib.h" 
 
 int retfd(char type, char num);
 //returns file deckriptor;
