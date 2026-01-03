@@ -17,8 +17,8 @@ int ifevent(int fd, int keynum, char evval, int time);
 //waits time second if nonblocking;
 //if time == -1 wait until event hapend
 
-int* ifevents(int fd, void *events, long arrlen, char type, int time);
-//events - array of intger arrays, 2 element ech, code of key and value of the event;
+int* ifevents(int fd, void *events, char type, int time);
+//events - array of intger arrays, 2 element ech, code of key and value of the event, last element must be NULL;
 //returns event([code, value])if event from events hapend, else NULL;
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
@@ -30,19 +30,21 @@ int ifeventscode(int fd, int *events, long arrlen, char type, int time);
 //waits time seconds if nonblocking;
 //if events == NULL reacts to all of events;
 
-int ifeventsvalue(int fd, int eventsvalue, char type, int time);
+int ifeventsvalue(int fd, int eventsvalue, char type, int time, int *ignor, long arrlen);
 //eventsvalue - value of event(0 or 1);
 //returns event code if event with this value hapend(key pressed or let), else -1;
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
 //if events == NULL reacts to all of events;
+//ignor - array of codes that should be ignored:
 
-int* ifanyevent(int fd, char type, int time);
+int* ifanyevents(int fd, char type, int time, void *ignor);
 //returns event([code, value]) if any event hapend else NULL;
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
 
-static int ifinarr(int **arr, long arrlen, int *vel);
+static int ifinparr(int **arr, int *vel);
+static int ifinarr(int *arr, long arrlen, int vel);
 
 static long double sleeptime = 0.001;//time * sleeptime = waiting time;
 
@@ -81,7 +83,7 @@ int ifevent(int fd, int keynum, char evval, int time)
 
 }
 
-int* ifevents(int fd, void* events, long arrlen, char type, int time)
+int* ifevents(int fd, void* events, char type, int time)
 {
 	struct input_event ev;
 	
@@ -100,7 +102,7 @@ int* ifevents(int fd, void* events, long arrlen, char type, int time)
 		read(fd, &ev, sizeof(ev));
 		nev[0] = ev.code;
 		nev[1] = ev.value;
-		if (ifinarr(events, arrlen, nev))
+		if (ifinparr(events, nev))
 		{
 			if (type == 1)
 			{
@@ -156,7 +158,7 @@ int ifeventscode(int fd, int *events, long arrlen, char type, int time)
 	return last_code;
 }
 
-int ifeventsvalue(int fd, int eventsvalue, char type, int time)
+int ifeventsvalue(int fd, int eventsvalue, char type, int time, int *ignor, long arrlen)
 {
 	struct input_event ev;
 	
@@ -174,7 +176,7 @@ int ifeventsvalue(int fd, int eventsvalue, char type, int time)
 	{
 		read(fd, &ev, sizeof(ev));
 		nec = ev.code;
-		if (ev.type == EV_KEY && ev.value == eventsvalue)
+		if (ev.type == EV_KEY && (ignor == NULL || !(ifinarr(ignor, arrlen, nec))) && ev.value == eventsvalue)
 		{
 			if (type == 1)
 			{
@@ -190,7 +192,7 @@ int ifeventsvalue(int fd, int eventsvalue, char type, int time)
 	return last_code;
 }
 
-int* ifanyevent(int fd, char type, int time)
+int* ifanyevents(int fd, char type, int time, void *ignor)
 {
 	struct input_event ev;
 	
@@ -228,9 +230,9 @@ int* ifanyevent(int fd, char type, int time)
 	return nev;
 }
 
-static int ifinarr(int **arr, long arrlen, int *vel)
+static int ifinparr(int **arr, int *vel)
 {
-	for(int i = 0; i < arrlen; i++)
+	for(int i = 0; arr[i] != NULL; i++)
 	{
 		//if ((((int*)arr)[i])[0] == vel[0] && (((int*)arr)[i])[1] == vel[1])
 		if (*(arr[i]) == vel[0] && *(arr[i]+1) == vel[1])
@@ -241,4 +243,15 @@ static int ifinarr(int **arr, long arrlen, int *vel)
 	return 0;
 }
 
+static int ifinarr(int *arr, long arrlen, int vel)
+{
+	for(int i = 0; i < arrlen; i++)
+	{
+		if (arr[i] == vel)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
 

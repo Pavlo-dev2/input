@@ -21,9 +21,9 @@ int main()
 	int ev2[] = {KEY_D, 1};
 	int ev3[] = {KEY_S, 0};
 	int ev4[] = {KEY_A, 1};
-	int* events[] = {ev1, ev2, ev3, ev4};
+	int* events[] = {ev1, ev2, ev3, ev4, NULL};
 
-	int *retvel = ifevents(fd, events, 4, 0, 2);
+	int *retvel = ifevents(fd, events, 0, 2);
 
 	printf("RETVEL: %p\n{%d, %d}\n", retvel, retvel[0], retvel[1]);
 	free(retvel);
@@ -37,15 +37,18 @@ int main()
 	
 	//ifeventsvalue test
 	/*
+	int ignor[] = {28, 17};	
 	sleepsec(1);
 	printf("Go\n");
-	printf("Ifeventscode: %d\n", ifeventsvalue(fd, 1, 0, 4));
+	printf("Ifeventscode: %d\n", ifeventsvalue(fd, 1, 0, 4, ignor, 2));
 	*/
 	
-	//ifanyevent test
-	int *retvel = ifanyevent(fd, 1, 3);
+	//ifanyevents test
+	/*
+	int *retvel = ifanyevents(fd, 1, 3);
 	printf("RETVEL: %p\n{%d, %d}\n", retvel, retvel[0], retvel[1]);
 	free(retvel);
+	*/
 
 	close(fd);
 }
