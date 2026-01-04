@@ -33,8 +33,9 @@ int ifeventsvalue(int fd, int eventsvalue, char type, int time, int *ignor, long
 //ignor - array of codes that should be ignored:
 
 int* ifanyevents(int fd, char type, int time, void *ignor);
-//returns event([code, value]) if any event hapend else NULL;
+//returns event([code, value]) if any event hapend else &{-1, -1};
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
+//ignor - array of pointers to integer arrays([code, value]) that should be ignored, ends with NULL
 
 #endif 

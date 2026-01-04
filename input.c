@@ -39,9 +39,10 @@ int ifeventsvalue(int fd, int eventsvalue, char type, int time, int *ignor, long
 //ignor - array of codes that should be ignored:
 
 int* ifanyevents(int fd, char type, int time, void *ignor);
-//returns event([code, value]) if any event hapend else NULL;
+//returns event([code, value]) if any event hapend else &{-1, -1};
 //type - type of shering, 0 for first event, 1 for last;
 //waits time seconds if nonblocking;
+//ignor - array of pointers to integer arrays([code, value]) that should be ignored, ends with NULL
 
 static int ifinparr(int **arr, int *vel);
 static int ifinarr(int *arr, long arrlen, int vel);
@@ -194,6 +195,8 @@ int ifeventsvalue(int fd, int eventsvalue, char type, int time, int *ignor, long
 
 int* ifanyevents(int fd, char type, int time, void *ignor)
 {
+	//printf("Masseg 1\n");
+	printf("ignor: %p\n", ignor);
 	struct input_event ev;
 	
 	if (time == -1 && type != 0)
@@ -211,7 +214,7 @@ int* ifanyevents(int fd, char type, int time, void *ignor)
 		read(fd, &ev, sizeof(ev));
 		nev[0] = ev.code;
 		nev[1] = ev.value;
-		if (ev.type == EV_KEY)
+		if (ev.type == EV_KEY && !(ifinparr(ignor, nev)))
 		{
 			if (type == 1)
 			{
@@ -232,6 +235,10 @@ int* ifanyevents(int fd, char type, int time, void *ignor)
 
 static int ifinparr(int **arr, int *vel)
 {
+	if (arr == NULL)
+	{
+		return 0;
+	}
 	for(int i = 0; arr[i] != NULL; i++)
 	{
 		//if ((((int*)arr)[i])[0] == vel[0] && (((int*)arr)[i])[1] == vel[1])

@@ -45,7 +45,14 @@ int main()
 	
 	//ifanyevents test
 	/*
-	int *retvel = ifanyevents(fd, 1, 3);
+	int ev1[] = {28, 0};
+	int ev2[] = {17, 1};
+	int ev3[] = {17, 0};
+	int ev4[] = {KEY_S, 0};
+	int ev5[] = {KEY_S, 1};
+	
+	void *ignor[] = {ev1, ev2, ev3, ev4, ev5, NULL};
+	int *retvel = ifanyevents(fd, 1, 3, ignor);
 	printf("RETVEL: %p\n{%d, %d}\n", retvel, retvel[0], retvel[1]);
 	free(retvel);
 	*/
