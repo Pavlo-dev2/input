@@ -195,8 +195,6 @@ int ifeventsvalue(int fd, int eventsvalue, char type, int time, int *ignor, long
 
 int* ifanyevents(int fd, char type, int time, void *ignor)
 {
-	//printf("Masseg 1\n");
-	printf("ignor: %p\n", ignor);
 	struct input_event ev;
 	
 	if (time == -1 && type != 0)
